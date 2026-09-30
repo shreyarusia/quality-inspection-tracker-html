@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0c3d38" />
+  <meta name="description" content="Log and resolve fabric quality defects from the shop floor." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Quality Inspection Tracker</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="frame">
+    <section id="login-view" class="login">
+      <div class="login-card">
+        <div class="brand">
+          <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="7" fill="#0c3d38"/>
+            <path fill="#f4f1ea" d="M5 6h5v20H5zm8 0h2.2v20H13zm5.2 0h3v20h-3zM24 6h3v20h-3z"/>
+          </svg>
+          <div>
+            <p class="eyebrow">Gujarat · Maharashtra</p>
+            <h1>Quality Inspection</h1>
+          </div>
+        </div>
+        <p class="lede">Log weave defects, shade issues, and other findings while you are still on the line.</p>
+        <form id="login-form">
+          <label class="field">
+            <span>Username</span>
+            <input id="username" name="username" autocomplete="username" required />
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input id="password" name="password" type="password" autocomplete="current-password" required />
+          </label>
+          <p id="login-error" class="form-error" role="alert" hidden></p>
+          <button class="btn btn-primary" type="submit">Sign in</button>
+        </form>
+        <p class="hint">Floor login: <strong>supervisor</strong> / <strong>shopfloor</strong></p>
+      </div>
+    </section>
+
+    <div id="shell" class="shell" hidden>
+      <header class="topbar">
+        <div class="brand">
+          <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="7" fill="#f4fffc"/>
+            <path fill="#0c3d38" d="M5 6h5v20H5zm8 0h2.2v20H13zm5.2 0h3v20h-3zM24 6h3v20h-3z"/>
+          </svg>
+          <div>
+            <p class="eyebrow">Fabric mills</p>
+            <h1>Quality Inspection</h1>
+          </div>
+        </div>
+        <button id="logout-btn" class="text-btn" type="button">Sign out</button>
+      </header>
+
+      <div id="status-banner" class="banner" hidden>
+        <p id="status-text"></p>
+        <button id="sync-btn" class="btn btn-small" type="button" hidden>Sync now</button>
+      </div>
+
+      <main>
+        <section id="view-log" aria-labelledby="log-title">
+          <h2 id="log-title">Log a defect</h2>
+          <form id="inspection-form">
+            <label class="field">
+              <span>Date</span>
+              <input id="inspection-date" name="inspectionDate" type="date" required />
+            </label>
+            <label class="field">
+              <span>Machine / line ID</span>
+              <input id="machine-line" name="machineLineId" maxlength="80" placeholder="GJ-SUR-L04" required />
+            </label>
+            <label class="field">
+              <span>Defect type</span>
+              <select id="defect-type" name="defectType" required>
+                <option value="">Select a type</option>
+                <option>Weave Defect</option>
+                <option>Shade Variation</option>
+                <option>Hole/Tear</option>
+                <option>Count Deviation</option>
+                <option>Other</option>
+              </select>
+            </label>
+            <fieldset class="field">
+              <legend>Severity</legend>
+              <div class="severity-picker">
+                <label class="sev sev-critical">
+                  <input type="radio" name="severity" value="Critical" required />
+                  Critical
+                </label>
+                <label class="sev sev-major">
+                  <input type="radio" name="severity" value="Major" />
+                  Major
+                </label>
+                <label class="sev sev-minor">
+                  <input type="radio" name="severity" value="Minor" />
+                  Minor
+                </label>
+              </div>
+            </fieldset>
+            <label class="field">
+              <span>Remarks <em>optional</em></span>
+              <textarea id="remarks" name="remarks" maxlength="1000" placeholder="What did you see on the roll?"></textarea>
+            </label>
+            <p id="form-error" class="form-error" role="alert" hidden></p>
+            <button id="save-btn" class="btn btn-primary" type="submit">Save inspection</button>
+          </form>
+        </section>
+
+        <section id="view-list" aria-labelledby="list-title" hidden>
+          <h2 id="list-title">Inspections</h2>
+          <div class="filters">
+            <div class="segment" id="status-filter" role="group" aria-label="Filter by status">
+              <button type="button" data-status="All" aria-pressed="true">All</button>
+              <button type="button" data-status="Open" aria-pressed="false">Open</button>
+              <button type="button" data-status="Resolved" aria-pressed="false">Resolved</button>
+            </div>
+            <label class="field">
+              <span>Severity</span>
+              <select id="severity-filter">
+                <option value="All">All severities</option>
+                <option>Critical</option>
+                <option>Major</option>
+                <option>Minor</option>
+              </select>
+            </label>
+            <div class="date-row">
+              <label class="field">
+                <span>From</span>
+                <input id="from-date" type="date" />
+              </label>
+              <label class="field">
+                <span>To</span>
+                <input id="to-date" type="date" />
+              </label>
+            </div>
+            <label class="field">
+              <span>Sort</span>
+              <select id="sort-filter">
+                <option value="date-desc">Date, newest first</option>
+                <option value="date-asc">Date, oldest first</option>
+                <option value="severity-asc">Severity, critical first</option>
+                <option value="severity-desc">Severity, minor first</option>
+                <option value="status-asc">Status, open first</option>
+                <option value="machine-asc">Machine / line</option>
+              </select>
+            </label>
+            <p id="range-error" class="form-error" role="alert" hidden></p>
+          </div>
+          <p id="list-count" class="count"></p>
+          <div id="list"></div>
+        </section>
+
+        <section id="view-summary" aria-labelledby="summary-title" hidden>
+          <h2 id="summary-title">Summary</h2>
+          <div class="stats">
+            <article class="stat stat-open">
+              <span>Open</span>
+              <b id="open-total">0</b>
+            </article>
+            <article class="stat stat-resolved">
+              <span>Resolved</span>
+              <b id="resolved-total">0</b>
+            </article>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">Open and resolved inspections by severity</caption>
+              <thead>
+                <tr>
+                  <th>Severity</th>
+                  <th class="num">Open</th>
+                  <th class="num">Resolved</th>
+                  <th class="num">Total</th>
+                </tr>
+              </thead>
+              <tbody id="summary-body"></tbody>
+            </table>
+          </div>
+          <p id="summary-note" class="hint" hidden></p>
+        </section>
+      </main>
+
+      <nav class="tabbar" aria-label="Sections">
+        <button type="button" data-view="log" aria-current="page">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11 5h2v14h-2zM5 11h14v2H5z"/></svg>
+          Log
+        </button>
+        <button type="button" data-view="list">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 6h16v2H4zm0 5h16v2H4zm0 5h10v2H4z"/></svg>
+          List
+        </button>
+        <button type="button" data-view="summary">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 19h3V9H4zm6.5 0h3V5h-3zM17 19h3v-7h-3z"/></svg>
+          Summary
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <div id="resolve-layer" class="layer" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="resolve-title">
+      <h2 id="resolve-title">Resolve inspection</h2>
+      <p id="resolve-context"></p>
+      <label class="field">
+        <span>Resolution note</span>
+        <textarea id="resolve-note" maxlength="1000" placeholder="What was done to close this?"></textarea>
+      </label>
+      <p id="resolve-error" class="form-error" role="alert" hidden></p>
+      <div class="sheet-actions">
+        <button id="resolve-cancel" class="btn btn-secondary" type="button">Cancel</button>
+        <button id="resolve-save" class="btn btn-primary" type="button">Mark resolved</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" role="status" hidden></div>
+  <script src="/app.js"></script>
+  <noscript>Turn on JavaScript to use the inspection tracker.</noscript>
+</body>
+</html>
